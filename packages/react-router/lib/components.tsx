@@ -258,6 +258,7 @@ export function MemoryRouter({
 
   return (
     <Router
+      allowNesting
       basename={basename}
       children={children}
       location={state.location}
@@ -399,6 +400,7 @@ export function Route(_props: RouteProps): React.ReactElement | null {
 }
 
 export interface RouterProps {
+  allowNesting?: boolean;
   basename?: string;
   children?: React.ReactNode;
   location: Partial<Location> | string;
@@ -418,6 +420,7 @@ export interface RouterProps {
  * @see https://reactrouter.com/v6/router-components/router
  */
 export function Router({
+  allowNesting = false,
   basename: basenameProp = "/",
   children = null,
   location: locationProp,
@@ -427,7 +430,7 @@ export function Router({
   future,
 }: RouterProps): React.ReactElement | null {
   invariant(
-    !useInRouterContext(),
+    !useInRouterContext() || allowNesting,
     `You cannot render a <Router> inside another <Router>.` +
       ` You should never have more than one in your app.`
   );
@@ -486,13 +489,23 @@ export function Router({
       `basename, so the <Router> won't render anything.`
   );
 
+  let routeContext = React.useMemo(() => {
+    return {
+      outlet: null,
+      matches: [],
+      isDataRoute: false,
+    };
+  }, []);
+
   if (locationContext == null) {
     return null;
   }
 
   return (
     <NavigationContext.Provider value={navigationContext}>
-      <LocationContext.Provider children={children} value={locationContext} />
+      <LocationContext.Provider value={locationContext}>
+        <RouteContext.Provider value={routeContext} children={children} />
+      </LocationContext.Provider>
     </NavigationContext.Provider>
   );
 }

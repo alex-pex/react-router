@@ -159,11 +159,9 @@ export interface RouteContextObject {
   isDataRoute: boolean;
 }
 
-export const RouteContext = React.createContext<RouteContextObject>({
-  outlet: null,
-  matches: [],
-  isDataRoute: false,
-});
+export const RouteContext = React.createContext<RouteContextObject>(
+  null!
+);
 
 if (__DEV__) {
   RouteContext.displayName = "Route";
